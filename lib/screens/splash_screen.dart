@@ -57,6 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<ZenFitState>();
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -64,14 +65,26 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.teal.shade700, Colors.teal.shade400],
+            colors: [
+              scheme.primary,
+              scheme.secondary,
+            ],
           ),
         ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.fitness_center, size: 80, color: Colors.white),
+              Container(
+                height: 84,
+                width: 84,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+                ),
+                child: const Icon(Icons.fitness_center, size: 44, color: Colors.white),
+              ),
               const SizedBox(height: 16),
               Text(
                 'ZenFit',
@@ -80,26 +93,59 @@ class _SplashScreenState extends State<SplashScreen> {
                       fontWeight: FontWeight.bold,
                     ),
               ),
+              const SizedBox(height: 10),
+              Text(
+                'Smart Gym Registration',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+              ),
               const SizedBox(height: 32),
               if (_loaded) ...[
-                Text(
-                  state.studentName ?? '',
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  state.studentId ?? '',
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-                Text(
-                  state.studentEmail ?? '',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                Card(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  surfaceTintColor: Colors.transparent,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Text(
+                          state.studentName ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          state.studentId ?? '',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          state.studentEmail ?? '',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ] else
                 Text(
                   _status,
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
                 ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: 210,
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.white.withValues(alpha: 0.22),
+                  color: Colors.white.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
             ],
           ),
         ),

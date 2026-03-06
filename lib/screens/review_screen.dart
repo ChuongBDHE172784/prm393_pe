@@ -5,76 +5,114 @@ import '../state/zenfit_state.dart';
 import 'profile_setup_screen.dart';
 import 'plan_selection_screen.dart';
 import 'dashboard_screen.dart';
+import '../widgets/zen_background.dart';
 
 class ReviewScreen extends StatelessWidget {
   const ReviewScreen({super.key});
+
+  String _formatVnd(int amount) {
+    final s = amount.abs().toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      final idxFromEnd = s.length - i;
+      buf.write(s[i]);
+      if (idxFromEnd > 1 && idxFromEnd % 3 == 1) buf.write(',');
+    }
+    final out = buf.toString();
+    return '${amount < 0 ? '-' : ''}$out VND';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Review & Confirm')),
-      body: Consumer<ZenFitState>(
-        builder: (context, state, _) {
-          final bmi = state.bmi;
-          final age = state.age;
-          final plan = state.selectedPlan;
+      body: ZenBackground(
+        child: Consumer<ZenFitState>(
+          builder: (context, state, _) {
+            final bmi = state.bmi;
+            final age = state.age;
+            final plan = state.selectedPlan;
+            final scheme = Theme.of(context).colorScheme;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 Text(
-                  'Profile summary',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  'Review your registration',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
+                Text(
+                  'Confirm everything looks correct before finishing.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 16),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Full name: ${state.fullName}'),
-                        if (age != null) Text('Age: $age'),
-                        Text('Gender: ${state.gender}'),
-                        if (state.weightKg != null)
-                          Text('Weight: ${state.weightKg!.toStringAsFixed(1)} kg'),
-                        if (state.heightCm != null)
-                          Text('Height: ${state.heightCm!.toStringAsFixed(1)} cm'),
-                        if (bmi != null)
-                          Text('BMI: ${bmi.toStringAsFixed(1)}'),
+                        Row(
+                          children: [
+                            Icon(Icons.badge_outlined, color: scheme.primary),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Profile',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        _kv('Full name', state.fullName),
+                        _kv('Gender', state.gender),
+                        if (age != null) _kv('Age', '$age'),
+                        if (state.weightKg != null) _kv('Weight', '${state.weightKg!.toStringAsFixed(1)} kg'),
+                        if (state.heightCm != null) _kv('Height', '${state.heightCm!.toStringAsFixed(1)} cm'),
+                        if (bmi != null) _kv('BMI', bmi.toStringAsFixed(1), emphasize: (bmi > 30)),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Plan & payment',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          plan == null
-                              ? 'Plan: not selected'
-                              : 'Plan: ${plan.label} (${plan.priceDisplay})',
+                        Row(
+                          children: [
+                            Icon(Icons.receipt_long, color: scheme.primary),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Plan & payment',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text('Promo code: ${state.promoCode.isEmpty ? 'None' : state.promoCode}'),
-                        const SizedBox(height: 8),
-                        Text('Subtotal: ${state.totalBeforePromo} VND'),
-                        Text('Discount: -${state.discountAmount} VND'),
-                        const Divider(),
-                        Text(
-                          'Final total: ${state.finalPrice} VND',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        const SizedBox(height: 10),
+                        _kv(
+                          'Plan',
+                          plan == null ? 'Not selected' : '${plan.label} (${plan.priceDisplay})',
                         ),
+                        _kv('Promo code', state.promoCode.isEmpty ? 'None' : state.promoCode),
+                        const Divider(height: 18),
+                        _kv('Subtotal', _formatVnd(state.totalBeforePromo)),
+                        _kv('Discount', _formatVnd(-state.discountAmount)),
+                        const Divider(height: 18),
+                        _kv('Final total', _formatVnd(state.finalPrice), bold: true),
                       ],
                     ),
                   ),
@@ -117,10 +155,37 @@ class ReviewScreen extends StatelessWidget {
                   },
                   child: const Text('Confirm & continue'),
                 ),
-              ],
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _kv(String k, String v, {bool bold = false, bool emphasize = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              k,
+              style: TextStyle(
+                color: Colors.black.withValues(alpha: 0.65),
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          );
-        },
+          ),
+          Text(
+            v,
+            style: TextStyle(
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w700,
+              color: emphasize ? Colors.red.shade700 : null,
+            ),
+          ),
+        ],
       ),
     );
   }

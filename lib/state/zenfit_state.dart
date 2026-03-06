@@ -44,25 +44,42 @@ class ZenFitState extends ChangeNotifier {
     if (g != null) gender = g;
     if (w != null) weightKg = w;
     if (h != null) heightCm = h;
+    _recomputePromo();
     notifyListeners();
   }
 
   void setPlan(GymPlan? plan) {
     selectedPlan = plan;
+    _recomputePromo();
     notifyListeners();
   }
 
   void setPromo(String code) {
-    promoCode = code;
+    final raw = code.trim();
+    final normalized = raw.toUpperCase();
+    promoCode = raw;
     _promoGiam50Applied = false;
     _promoTanThuApplied = false;
-    if (code.toUpperCase() == 'GIAM50' && totalBeforePromo > 1500000) {
+
+    if (normalized == 'GIAM50' && totalBeforePromo > 1500000) {
       _promoGiam50Applied = true;
     }
-    if (code.toUpperCase() == 'TANTHU' && (age ?? 999) < 22) {
+    if (normalized == 'TANTHU' && (age ?? 999) < 22) {
       _promoTanThuApplied = true;
     }
+
     notifyListeners();
+  }
+
+  void _recomputePromo() {
+    if (promoCode.isEmpty) {
+      _promoGiam50Applied = false;
+      _promoTanThuApplied = false;
+      return;
+    }
+    final normalized = promoCode.trim().toUpperCase();
+    _promoGiam50Applied = normalized == 'GIAM50' && totalBeforePromo > 1500000;
+    _promoTanThuApplied = normalized == 'TANTHU' && (age ?? 999) < 22;
   }
 
   /// BMI = weight / (height_m)^2. Null if weight or height missing.
@@ -90,8 +107,8 @@ class ZenFitState extends ChangeNotifier {
   /// Discount: GIAM50 = 50% off when applicable; TANTHU = 100k off when applicable.
   int get discountAmount {
     int d = 0;
-    if (_promoGiam50Applied) d += totalBeforePromo ~/ 2;
-    if (_promoTanThuApplied) d += 100000;
+    if (promoGiam50Applied) d += totalBeforePromo ~/ 2;
+    if (promoTanThuApplied) d += 100000;
     return d;
   }
 
