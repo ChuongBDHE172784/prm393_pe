@@ -1,0 +1,64 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../models/ai_prompt_item.dart';
+import 'ai_response_detail_screen.dart';
+
+class AiHistoryScreen extends StatelessWidget {
+  const AiHistoryScreen({super.key});
+
+  Future<List<AiPromptItem>> _loadHistory() async {
+    final jsonString = await rootBundle.loadString('assets/ai_prompt_history.json');
+    final List<dynamic> data = jsonDecode(jsonString) as List<dynamic>;
+    return data
+        .map((e) => AiPromptItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('AI Prompt History')),
+      body: FutureBuilder<List<AiPromptItem>>(
+        future: _loadHistory(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Failed to load history: ${snapshot.error}'),
+            );
+          }
+
+          final items = snapshot.data ?? [];
+          if (items.isEmpty) {
+            return const Center(child: Text('No AI prompts found.'));
+          }
+
+          return ListView.separated(
+            itemCount: items.length,
+            separatorBuilder: (context, index) => const Divider(height: 0),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return ListTile(
+                title: Text(item.shortTitle),
+                subtitle: Text('${item.date} ${item.time}'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AiResponseDetailScreen(item: item),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+

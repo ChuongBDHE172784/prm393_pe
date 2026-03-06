@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/zenfit_state.dart';
-import '../models/gym_plan.dart';
 import 'review_screen.dart';
 
 /// Screen 3: Payment & Promo. GIAM50 if total > 1.5tr; TANTHU if age < 22. Continue -> Review.
@@ -29,7 +28,6 @@ class _PaymentPromoScreenState extends State<PaymentPromoScreen> {
         builder: (context, state, _) {
           final plan = state.selectedPlan;
           final total = state.totalBeforePromo;
-          final discount = state.discountAmount;
           final finalPrice = state.finalPrice;
           final giam50 = state.promoGiam50Applied;
           final tanThu = state.promoTanThuApplied;

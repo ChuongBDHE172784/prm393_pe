@@ -75,7 +75,7 @@ class PlanSelectionScreen extends StatelessWidget {
                         color: isSelected ? Colors.teal.shade50 : null,
                         child: ListTile(
                           title: Text(plan.label),
-                          subtitle: Text('${plan.priceDisplay}'),
+                          subtitle: Text(plan.priceDisplay),
                           trailing: isSelected
                               ? const Icon(Icons.check_circle, color: Colors.teal)
                               : null,
